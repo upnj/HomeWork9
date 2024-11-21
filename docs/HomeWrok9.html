@@ -226,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ✖ dplyr::lag()      masks stats::lag()
 ✖ yardstick::spec() masks readr::spec()
 ✖ recipes::step()   masks stats::step()
-• Search for functions across packages at https://www.tidymodels.org/find/</code></pre>
+• Use tidymodels_prefer() to resolve common conflicts.</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -775,9 +775,8 @@ There were issues with some computations   A: x10   B: x10</code></pre>
 <span id="cb115-8"><a href="#cb115-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>→ A | error:   argument "new_data" is missing, with no default
-There were issues with some computations   A: x1
 → B | warning: prediction from rank-deficient fit; consider predict(., rankdeficient="NA")
-There were issues with some computations   A: x1
+There were issues with some computations   A: x2   B: x1
 There were issues with some computations   A: x10   B: x10</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect and compare CV results</span></span>
@@ -976,29 +975,28 @@ Model 3 CV Results:</code></pre>
 <span id="cb130-132"><a href="#cb130-132" aria-hidden="true" tabindex="-1"></a>   </span>
 <span id="cb130-133"><a href="#cb130-133" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb130-134"><a href="#cb130-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-135"><a href="#cb130-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-136"><a href="#cb130-136" aria-hidden="true" tabindex="-1"></a>test_metrics <span class="ot">&lt;-</span> <span class="fu">imap_dfr</span>(</span>
-<span id="cb130-137"><a href="#cb130-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb130-138"><a href="#cb130-138" aria-hidden="true" tabindex="-1"></a>    <span class="at">LASSO =</span> test_results<span class="sc">$</span>lasso_pred,</span>
-<span id="cb130-139"><a href="#cb130-139" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Regression Tree</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>tree_pred,</span>
-<span id="cb130-140"><a href="#cb130-140" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Bagged Tree</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>bagged_pred,</span>
-<span id="cb130-141"><a href="#cb130-141" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Random Forest</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>rf_pred</span>
-<span id="cb130-142"><a href="#cb130-142" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb130-143"><a href="#cb130-143" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb130-144"><a href="#cb130-144" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span> <span class="fu">tibble</span>(</span>
-<span id="cb130-145"><a href="#cb130-145" aria-hidden="true" tabindex="-1"></a>    <span class="at">model =</span> .y,</span>
-<span id="cb130-146"><a href="#cb130-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">rmse =</span> <span class="fu">rmse_vec</span>(test_results<span class="sc">$</span>bike_count, .x),</span>
-<span id="cb130-147"><a href="#cb130-147" aria-hidden="true" tabindex="-1"></a>    <span class="at">mae =</span> <span class="fu">mae_vec</span>(test_results<span class="sc">$</span>bike_count, .x)</span>
-<span id="cb130-148"><a href="#cb130-148" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb130-149"><a href="#cb130-149" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb130-150"><a href="#cb130-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-151"><a href="#cb130-151" aria-hidden="true" tabindex="-1"></a><span class="co"># Select the best overall model</span></span>
-<span id="cb130-152"><a href="#cb130-152" aria-hidden="true" tabindex="-1"></a>best_model <span class="ot">&lt;-</span> test_metrics <span class="sc">%&gt;%</span></span>
-<span id="cb130-153"><a href="#cb130-153" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rmse) <span class="sc">%&gt;%</span></span>
-<span id="cb130-154"><a href="#cb130-154" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb130-155"><a href="#cb130-155" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(model)</span>
-<span id="cb130-156"><a href="#cb130-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-157"><a href="#cb130-157" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"The best overall model based on RMSE is:"</span>, best_model, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb130-135"><a href="#cb130-135" aria-hidden="true" tabindex="-1"></a>test_metrics <span class="ot">&lt;-</span> <span class="fu">imap_dfr</span>(</span>
+<span id="cb130-136"><a href="#cb130-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb130-137"><a href="#cb130-137" aria-hidden="true" tabindex="-1"></a>    <span class="at">LASSO =</span> test_results<span class="sc">$</span>lasso_pred,</span>
+<span id="cb130-138"><a href="#cb130-138" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Regression Tree</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>tree_pred,</span>
+<span id="cb130-139"><a href="#cb130-139" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Bagged Tree</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>bagged_pred,</span>
+<span id="cb130-140"><a href="#cb130-140" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Random Forest</span><span class="st">`</span> <span class="ot">=</span> test_results<span class="sc">$</span>rf_pred</span>
+<span id="cb130-141"><a href="#cb130-141" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb130-142"><a href="#cb130-142" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb130-143"><a href="#cb130-143" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span> <span class="fu">tibble</span>(</span>
+<span id="cb130-144"><a href="#cb130-144" aria-hidden="true" tabindex="-1"></a>    <span class="at">model =</span> .y,</span>
+<span id="cb130-145"><a href="#cb130-145" aria-hidden="true" tabindex="-1"></a>    <span class="at">rmse =</span> <span class="fu">rmse_vec</span>(test_results<span class="sc">$</span>bike_count, .x),</span>
+<span id="cb130-146"><a href="#cb130-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">mae =</span> <span class="fu">mae_vec</span>(test_results<span class="sc">$</span>bike_count, .x)</span>
+<span id="cb130-147"><a href="#cb130-147" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb130-148"><a href="#cb130-148" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb130-149"><a href="#cb130-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-150"><a href="#cb130-150" aria-hidden="true" tabindex="-1"></a><span class="co"># Select the best overall model</span></span>
+<span id="cb130-151"><a href="#cb130-151" aria-hidden="true" tabindex="-1"></a>best_model <span class="ot">&lt;-</span> test_metrics <span class="sc">%&gt;%</span></span>
+<span id="cb130-152"><a href="#cb130-152" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rmse) <span class="sc">%&gt;%</span></span>
+<span id="cb130-153"><a href="#cb130-153" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb130-154"><a href="#cb130-154" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(model)</span>
+<span id="cb130-155"><a href="#cb130-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-156"><a href="#cb130-156" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"The best overall model based on RMSE is:"</span>, best_model, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The best overall model based on RMSE is: Bagged Tree </code></pre>
 </div>

@@ -429,7 +429,6 @@ test_results <- bike_test %>%
    
   )
 
-
 test_metrics <- imap_dfr(
   list(
     LASSO = test_results$lasso_pred,
