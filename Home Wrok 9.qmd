@@ -142,6 +142,7 @@ print(recipe2)
 prep(recipe2) %>%
  bake(new_data = NULL) %>%
  glimpse()
+
 ```
 
 ```{r}
@@ -366,6 +367,7 @@ rf_model <- rand_forest(mtry = tune(), min_n = tune(), trees = 5) %>%
 rf_workflow <- workflow() %>%
   add_recipe(rf_recipe) %>%
   add_model(rf_model)
+
 
 # Define the tuning grid for each model
 lasso_grid <- expand.grid(penalty = 10^seq(-4, 0, length.out = 10))
