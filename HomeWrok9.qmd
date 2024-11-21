@@ -5,11 +5,7 @@ format: html
 editor: visual
 ---
 
-
-
-Let's take the Part of the code from Home Work 8 as we used MLR model. Please note I am using the bike_data_clean dataset insead of daily_bike_data used in home work 8. 
-
-
+Let's take the Part of the code from Home Work 8 as we used MLR model. Please note I am using the bike_data_clean dataset insead of daily_bike_data used in home work 8.
 
 ```{r}
 #install.packages("baguette")
@@ -77,18 +73,9 @@ bike_folds
 
 ```
 
-
-
 ## Fitting MLR Models
 
-First, let’s create some recipes. 
-For the 1st recipe: 
-• Let’s ignore the date variable for modeling (so we’ll need to remove that or give it a different ID) but use it to create a weekday/weekend (factor) variable. (See step 2 of the shinymodels tutorial! You can use step_date() then step_mutate() with a factor(if_else(…)) to create the variable. I then had to remove the intermediate variable created.) 
-• Let’s standardize the numeric variables since their scales are pretty different. 
-• Let’s create dummy variables for the seasons, holiday, and our new day type variable
-
-
-
+First, let’s create some recipes. For the 1st recipe: • Let’s ignore the date variable for modeling (so we’ll need to remove that or give it a different ID) but use it to create a weekday/weekend (factor) variable. (See step 2 of the shinymodels tutorial! You can use step_date() then step_mutate() with a factor(if_else(…)) to create the variable. I then had to remove the intermediate variable created.) • Let’s standardize the numeric variables since their scales are pretty different. • Let’s create dummy variables for the seasons, holiday, and our new day type variable
 
 ```{r}
 # Create first recipe
@@ -120,12 +107,7 @@ prep(recipe1) %>%
  glimpse()
 ```
 
-
-
 For the 2nd recipe: • Do the same steps as above. • Add in interactions between seasons and holiday, seasons and temp, temp and rainfall. For the seasons interactions, you can use starts_with() to create the proper interactions.
-
-
-
 
 ```{r}
 # Create second recipe
@@ -154,6 +136,7 @@ print(recipe2)
 prep(recipe2) %>%
  bake(new_data = NULL) %>%
  glimpse()
+
 ```
 
 ```{r}
@@ -165,20 +148,11 @@ cat("\nInteraction terms created:\n")
 names(processed_data2)[grep("_x_", names(processed_data2))]
 ```
 
-
-
 This recipe includes:
 
 All transformations from recipe1 Interactions between:
 
-Seasons dummy variables and holiday
-Seasons dummy variables and mean temperature
-Mean temperature and total rainfall
-For the 3rd recipe: 
-• Do the same as the 2nd recipe. 
-• Add in quadratic terms for each numeric predictor
-
-
+Seasons dummy variables and holiday Seasons dummy variables and mean temperature Mean temperature and total rainfall For the 3rd recipe: • Do the same as the 2nd recipe. • Add in quadratic terms for each numeric predictor
 
 ```{r}
 # Create third recipe
@@ -221,7 +195,6 @@ names(processed_data3)[grep("_2$", names(processed_data3))]
 
 ```
 
-
 All transformations from recipe2 Quadratic terms (squared terms) for all numeric predictors:
 
 rainfall temperature humidity wind_speed visibility dew_point solar_rad total_snowfall
@@ -229,9 +202,6 @@ rainfall temperature humidity wind_speed visibility dew_point solar_rad total_sn
 Each numeric variable will now have both its linear and quadratic term, allowing for curved relationships with the response variable.
 
 Now set up our linear model fit to use the “lm” engine. Fit the models using 10 fold CV via fit_resamples() and consider the training set CV error to choose a best model.
-
-
-
 
 ```{r}
 # Set up linear model with lm engine
@@ -302,38 +272,27 @@ combined_results <- bind_rows(
 
 ```
 
-
 To determine the best model among the three sets of results, we need to compare their performance metrics. Let's focus on the RMSE (Root Mean Squared Error) and R-squared values, as they provide a good indication of the model's predictive accuracy and goodness of fit.
 
 Model 1:
 
-RMSE: 432.4479006
-R-squared: 0.5515968
-
+RMSE: 432.4479006 R-squared: 0.5515968
 
 Model 2:
 
-RMSE: 432.6638342
-R-squared: 0.5511493
-
+RMSE: 432.6638342 R-squared: 0.5511493
 
 Model 3:
 
-RMSE: 421.644854
-R-squared: 0.573702
-
-
+RMSE: 421.644854 R-squared: 0.573702
 
 Comparing the three models:
 
-Model 3 has the lowest RMSE value of 421.644854, which indicates that it has the smallest average prediction error among the three models. A lower RMSE suggests better predictive accuracy.
-Model 3 also has the highest R-squared value of 0.573702, meaning that it explains the highest proportion of variance in the target variable among the three models. A higher R-squared indicates a better fit of the model to the data.
+Model 3 has the lowest RMSE value of 421.644854, which indicates that it has the smallest average prediction error among the three models. A lower RMSE suggests better predictive accuracy. Model 3 also has the highest R-squared value of 0.573702, meaning that it explains the highest proportion of variance in the target variable among the three models. A higher R-squared indicates a better fit of the model to the data.
 
-Based on these results, Model 3 appears to be the best-performing model among the three. It has the lowest RMSE and the highest R-squared, suggesting that it has better predictive accuracy and explains more variability in the target variable compared to the other two models.
-However, it's important to note that the differences in performance metrics between the models are relatively small. The RMSE values are close to each other, and the R-squared values are also similar. 
+Based on these results, Model 3 appears to be the best-performing model among the three. It has the lowest RMSE and the highest R-squared, suggesting that it has better predictive accuracy and explains more variability in the target variable compared to the other two models. However, it's important to note that the differences in performance metrics between the models are relatively small. The RMSE values are close to each other, and the R-squared values are also similar.
 
 For the homework 9 I will used model 3
-
 
 ```{r}
 # Define the model recipes and workflows
@@ -392,94 +351,107 @@ rf_workflow <- workflow() %>%
   add_recipe(rf_recipe) %>%
   add_model(rf_model)
 
-# Define the tuning grid for each model
-lasso_grid <- expand.grid(penalty = 10^seq(-4, 0, length.out = 10))
+# Define the minimal tuning grids for all models
+lasso_grid_minimal <- expand.grid(penalty = 10^seq(-3, -1, length.out = 3))
+tree_grid_minimal <- expand.grid(cost_complexity = 10^seq(-2, -1, length.out = 2),
+                                 min_n = c(5, 10))
+rf_grid_minimal <- expand.grid(mtry = c(2, 4), min_n = c(5, 10))
 
-tree_grid <- expand.grid(cost_complexity = 10^seq(-3, -1, length.out = 5), 
-                         min_n = seq(2, 10, by = 2))
+# Define an extremely small tuning grid for the Bagged Tree model
+bagged_grid_fast <- expand.grid(cost_complexity = 10^-2,
+                                min_n = c(5))
 
-bagged_grid <- expand.grid(cost_complexity = 10^seq(-3, -1, length.out = 5), 
-                           min_n = seq(2, 10, by = 2))
-
-rf_grid <- expand.grid(mtry = seq(2, 5, by = 1), min_n = seq(2, 10, by = 2))
+# Create a smaller set of resamples for faster tuning
+set.seed(123)
+bike_folds_fast <- vfold_cv(bike_train, v = 3)
 
 # Tune the models
-lasso_tuned <- tune_grid(lasso_workflow, resamples = bike_folds, grid = lasso_grid, metrics = metric_set(rmse, rsq, mae))
+lasso_tuned <- tune_grid(
+  lasso_workflow,
+  resamples = bike_folds_fast,
+  grid = lasso_grid_minimal,
+  metrics = metric_set(rmse, rsq, mae)
+)
 
-tree_tuned <- tune_grid(tree_workflow, resamples = bike_folds, grid = tree_grid, metrics = metric_set(rmse, rsq, mae))
+tree_tuned <- tune_grid(
+  tree_workflow,
+  resamples = bike_folds_fast,
+  grid = tree_grid_minimal,
+  metrics = metric_set(rmse, rsq, mae)
+)
 
-bagged_tuned <- tune_grid(bagged_workflow, resamples = bike_folds, grid = bagged_grid, metrics = metric_set(rmse, rsq, mae))
+bagged_tuned <- tune_grid(
+  bagged_workflow,
+  resamples = bike_folds_fast,
+  grid = bagged_grid_fast,
+  metrics = metric_set(rmse, rsq, mae)
+)
 
-rf_tuned <- tune_grid(rf_workflow, resamples = bike_folds, grid = rf_grid, metrics = metric_set(rmse, rsq, mae))
+rf_tuned <- tune_grid(
+  rf_workflow,
+  resamples = bike_folds_fast,
+  grid = rf_grid_minimal,
+  metrics = metric_set(rmse, rsq, mae)
+)
 
-# Select the best models based on RMSE
-best_lasso <- select_best(lasso_tuned, metric= "rmse")
-best_tree <- select_best(tree_tuned, metric = "rmse")
-best_bagged <- select_best(bagged_tuned, "rmse")
-best_rf <- select_best(rf_tuned, metric = "rmse")
+# Select the best model for each tuned model
+best_lasso <- lasso_tuned %>% select_best(metric = "rmse")
+best_tree <- tree_tuned %>% select_best(metric = "rmse")
+best_bagged <- bagged_tuned %>% select_best(metric = "rmse")
+best_rf <- rf_tuned %>% select_best(metric = "rmse")
 
-# Fit the best models to the entire training set
-final_lasso <- finalize_workflow(lasso_workflow, best_lasso) %>%
-  fit(data = bike_train)
+# Finalize the workflows with the best models
+final_lasso_workflow <- lasso_workflow %>% finalize_workflow(best_lasso)
+final_tree_workflow <- tree_workflow %>% finalize_workflow(best_tree)
+final_bagged_workflow <- bagged_workflow %>% finalize_workflow(best_bagged)
+final_rf_workflow <- rf_workflow %>% finalize_workflow(best_rf)
 
-final_tree <- finalize_workflow(tree_workflow, best_tree) %>%
-  fit(data = bike_train)
+# Fit the finalized models on the full training data
+final_lasso_fit <- final_lasso_workflow %>% fit(data = bike_train)
+final_tree_fit <- final_tree_workflow %>% fit(data = bike_train)
+final_bagged_fit <- final_bagged_workflow %>% fit(data = bike_train)
+final_rf_fit <- final_rf_workflow %>% fit(data = bike_train)
 
-final_bagged <- finalize_workflow(bagged_workflow, best_bagged) %>%
-  fit(data = bike_train)
+library(yardstick)
+library(purrr)
 
-final_rf <- finalize_workflow(rf_workflow, best_rf) %>%
-  fit(data = bike_train)
+# Compare the models on the test set
+test_results <- bike_test %>%
+  bind_cols(
+    lasso_pred = predict(final_lasso_fit, new_data = bike_test)$.pred,
+    tree_pred = predict(final_tree_fit, new_data = bike_test)$.pred,
+    bagged_pred = predict(final_bagged_fit, new_data = bike_test)$.pred,
+    rf_pred = predict(final_rf_fit, new_data = bike_test)$.pred
+  )
 
-# Evaluate the models on the test set
-test_results <- bind_rows(
-  predict(final_lasso, bike_test) %>% mutate(model = "LASSO"),
-  predict(final_tree, bike_test) %>% mutate(model = "Regression Tree"),
- predict(final_bagged, bike_test) %>% mutate(model = "Bagged Tree"),
-  predict(final_rf, bike_test) %>% mutate(model = "Random Forest")
-) %>%
-  bind_cols(bike_test %>% select(bike_count))
+test_metrics <- imap_dfr(
+  list(
+    LASSO = test_results$lasso_pred,
+    `Regression Tree` = test_results$tree_pred,
+    `Bagged Tree` = test_results$bagged_pred,
+    `Random Forest` = test_results$rf_pred
+  ),
+  ~ tibble(
+    model = .y,
+    rmse = rmse_vec(test_results$bike_count, .x),
+    mae = mae_vec(test_results$bike_count, .x)
+  )
+)
 
-test_metrics <- test_results %>%
-  group_by(model) %>%
-  metrics(truth = bike_count, estimate = .pred, metric_set(rmse, mae))
-
-# Print the test metrics
-print(test_metrics)
-
-# Extract final model fits and report summaries
-
-# LASSO coefficients
-tidy(final_lasso)
-
-# Regression Tree plot
-rpart.plot(final_tree$fit)
-
-# Bagged Tree and Random Forest variable importance plots
-vip(final_bagged$fit)
-vip(final_rf$fit)
-
-# Final model selection (based on RMSE or MAE)
+# Select the best overall model
 best_model <- test_metrics %>%
-  filter(.metric == "rmse") %>%
-  arrange(.estimate) %>%
-  slice(1)
+  arrange(rmse) %>%
+  slice(1) %>%
+  pull(model)
 
-# Fit the overall best model to the entire dataset
-best_overall_model <- switch(best_model$model,
-                             "LASSO" = final_lasso,
-                             "Regression Tree" = final_tree,
-                             "Bagged Tree" = final_bagged,
-                             "Random Forest" = final_rf)
+cat("The best overall model based on RMSE is:", best_model, "\n")
 
-best_overall_fit <- best_overall_model %>%
+# Fit the best model on the entire dataset
+best_fit <- switch(best_model,
+                   "LASSO" = final_lasso_workflow,
+                   "Regression Tree" = final_tree_workflow,
+                   "Bagged Tree" = final_bagged_workflow,
+                   "Random Forest" = final_rf_workflow
+) %>%
   fit(data = bike_data_clean)
-
-# Print summary of the best model fit
-summary(best_overall_fit)
-
-
-
-
 ```
-
