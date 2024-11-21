@@ -411,18 +411,24 @@ final_lasso_fit <- final_lasso_workflow %>% fit(data = bike_train)
 final_tree_fit <- final_tree_workflow %>% fit(data = bike_train)
 final_bagged_fit <- final_bagged_workflow %>% fit(data = bike_train)
 final_rf_fit <- final_rf_workflow %>% fit(data = bike_train)
+final_mlr_fit <- workflow3 %>% fit(data=bike_train)
+
+
 
 library(yardstick)
 library(purrr)
 
+# Compare the models on the test set
 # Compare the models on the test set
 test_results <- bike_test %>%
   bind_cols(
     lasso_pred = predict(final_lasso_fit, new_data = bike_test)$.pred,
     tree_pred = predict(final_tree_fit, new_data = bike_test)$.pred,
     bagged_pred = predict(final_bagged_fit, new_data = bike_test)$.pred,
-    rf_pred = predict(final_rf_fit, new_data = bike_test)$.pred
+    rf_pred = predict(final_rf_fit, new_data = bike_test)$.pred,
+   
   )
+
 
 test_metrics <- imap_dfr(
   list(
@@ -430,6 +436,7 @@ test_metrics <- imap_dfr(
     `Regression Tree` = test_results$tree_pred,
     `Bagged Tree` = test_results$bagged_pred,
     `Random Forest` = test_results$rf_pred
+    
   ),
   ~ tibble(
     model = .y,
@@ -451,7 +458,16 @@ best_fit <- switch(best_model,
                    "LASSO" = final_lasso_workflow,
                    "Regression Tree" = final_tree_workflow,
                    "Bagged Tree" = final_bagged_workflow,
-                   "Random Forest" = final_rf_workflow
+                   "Random Forest" = final_rf_workflow,
+                   
 ) %>%
   fit(data = bike_data_clean)
+
+
+
+
+
+
+
+
 ```
