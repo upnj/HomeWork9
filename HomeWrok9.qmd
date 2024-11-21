@@ -444,6 +444,7 @@ test_metrics <- imap_dfr(
   )
 )
 
+print(test_metrics)
 # Select the best overall model
 best_model <- test_metrics %>%
   arrange(rmse) %>%
@@ -461,7 +462,6 @@ best_fit <- switch(best_model,
                    
 ) %>%
   fit(data = bike_data_clean)
-
 
 
 

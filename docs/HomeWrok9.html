@@ -226,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ✖ dplyr::lag()      masks stats::lag()
 ✖ yardstick::spec() masks readr::spec()
 ✖ recipes::step()   masks stats::step()
-• Use tidymodels_prefer() to resolve common conflicts.</code></pre>
+• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -990,25 +990,35 @@ Model 3 CV Results:</code></pre>
 <span id="cb130-147"><a href="#cb130-147" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb130-148"><a href="#cb130-148" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb130-149"><a href="#cb130-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-150"><a href="#cb130-150" aria-hidden="true" tabindex="-1"></a><span class="co"># Select the best overall model</span></span>
-<span id="cb130-151"><a href="#cb130-151" aria-hidden="true" tabindex="-1"></a>best_model <span class="ot">&lt;-</span> test_metrics <span class="sc">%&gt;%</span></span>
-<span id="cb130-152"><a href="#cb130-152" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rmse) <span class="sc">%&gt;%</span></span>
-<span id="cb130-153"><a href="#cb130-153" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb130-154"><a href="#cb130-154" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(model)</span>
-<span id="cb130-155"><a href="#cb130-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-156"><a href="#cb130-156" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"The best overall model based on RMSE is:"</span>, best_model, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb130-150"><a href="#cb130-150" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(test_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  model            rmse   mae
+  &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
+1 LASSO            382.  292.
+2 Regression Tree  373.  265.
+3 Bagged Tree      356.  251.
+4 Random Forest    386.  288.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select the best overall model</span></span>
+<span id="cb132-2"><a href="#cb132-2" aria-hidden="true" tabindex="-1"></a>best_model <span class="ot">&lt;-</span> test_metrics <span class="sc">%&gt;%</span></span>
+<span id="cb132-3"><a href="#cb132-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rmse) <span class="sc">%&gt;%</span></span>
+<span id="cb132-4"><a href="#cb132-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb132-5"><a href="#cb132-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(model)</span>
+<span id="cb132-6"><a href="#cb132-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-7"><a href="#cb132-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"The best overall model based on RMSE is:"</span>, best_model, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The best overall model based on RMSE is: Bagged Tree </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the best model on the entire dataset</span></span>
-<span id="cb132-2"><a href="#cb132-2" aria-hidden="true" tabindex="-1"></a>best_fit <span class="ot">&lt;-</span> <span class="cf">switch</span>(best_model,</span>
-<span id="cb132-3"><a href="#cb132-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"LASSO"</span> <span class="ot">=</span> final_lasso_workflow,</span>
-<span id="cb132-4"><a href="#cb132-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Regression Tree"</span> <span class="ot">=</span> final_tree_workflow,</span>
-<span id="cb132-5"><a href="#cb132-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Bagged Tree"</span> <span class="ot">=</span> final_bagged_workflow,</span>
-<span id="cb132-6"><a href="#cb132-6" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Random Forest"</span> <span class="ot">=</span> final_rf_workflow,</span>
-<span id="cb132-7"><a href="#cb132-7" aria-hidden="true" tabindex="-1"></a>                   </span>
-<span id="cb132-8"><a href="#cb132-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="cb132-9"><a href="#cb132-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> bike_data_clean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the best model on the entire dataset</span></span>
+<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a>best_fit <span class="ot">&lt;-</span> <span class="cf">switch</span>(best_model,</span>
+<span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"LASSO"</span> <span class="ot">=</span> final_lasso_workflow,</span>
+<span id="cb134-4"><a href="#cb134-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Regression Tree"</span> <span class="ot">=</span> final_tree_workflow,</span>
+<span id="cb134-5"><a href="#cb134-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Bagged Tree"</span> <span class="ot">=</span> final_bagged_workflow,</span>
+<span id="cb134-6"><a href="#cb134-6" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Random Forest"</span> <span class="ot">=</span> final_rf_workflow,</span>
+<span id="cb134-7"><a href="#cb134-7" aria-hidden="true" tabindex="-1"></a>                   </span>
+<span id="cb134-8"><a href="#cb134-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb134-9"><a href="#cb134-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> bike_data_clean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
